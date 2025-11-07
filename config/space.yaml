@@ -1,7 +1,7 @@
 # simple defaults; tweak later
-shell_altitude_km: [200, 300]   # LEO band
+shell_altitude_km: [200, 1300]   # LEO band
 proximity_km_now: 50             # edge if current range < 50km
 tca_window_hours: 24             # look-ahead window
-risk_threshold_km: 1.0           # “high risk” if min distance < 1km
+risk_threshold_km: 1000          # “high risk” if min distance < 1km
 top_n: 100
 
