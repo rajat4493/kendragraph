@@ -154,6 +154,91 @@ with tab_3d:
         fig.update_layout(height=640)
         st.plotly_chart(fig, use_container_width=True)
         st.caption("Note: This is a lightweight illustrative view. For true ECI coordinates, we can wire real positions from the propagation step (heavier).")
+# -------- Globe --------
+tab_globe = st.tabs(["Globe"])[0]
+with tab_globe:
+    st.subheader("Live Earth View (sub-points of Top-N satellites)")
+
+    try:
+        import plotly.graph_objects as go
+        from skyfield.api import EarthSatellite, load, wgs84
+        from adapters.space_adapter import load_tle_txt
+
+        # 1) Take the Top-N pairs currently shown
+        shown = df.head(top_n).copy()
+        ids = set(shown["norad_id_a"].tolist() + shown["norad_id_b"].tolist())
+
+        # 2) Load TLEs and build quick lookup
+        df_tle = load_tle_txt(str(TLE_FILE))
+        tle_map = {int(r.norad_id): (str(r.l1), str(r.l2), str(r.name)) for r in df_tle.itertuples() if int(r.norad_id) in ids}
+
+        if not tle_map:
+            st.info("No TLEs found for current selection. Try recalculating.")
+        else:
+            # 3) Compute current sub-point (lat/lon/alt) for each satellite
+            ts = load.timescale()
+            t_now = ts.from_datetime(datetime.now(timezone.utc))
+            points = []
+            for nid, (l1, l2, nm) in tle_map.items():
+                sat = EarthSatellite(l1, l2, nm, ts)
+                geo = sat.at(t_now)
+                sp = wgs84.subpoint(geo)
+                points.append({
+                    "norad_id": nid,
+                    "name": nm,
+                    "lat": sp.latitude.degrees,
+                    "lon": sp.longitude.degrees,
+                    "alt_km": sp.elevation.km
+                })
+            dfg = pd.DataFrame(points)
+
+            # 4) Plot globe with points + pair lines
+            fig = go.Figure()
+
+            # Base Earth (orthographic globe)
+            fig.update_geos(
+                projection_type="orthographic",
+                showcountries=True,
+                showcoastlines=True,
+                showland=True,
+                landcolor="rgb(230,230,230)",
+            )
+
+            # Points: satellites’ sub-points
+            fig.add_trace(go.Scattergeo(
+                lat=dfg["lat"], lon=dfg["lon"],
+                text=dfg["name"],
+                hovertemplate="<b>%{text}</b><br>lat: %{lat:.2f}°, lon: %{lon:.2f}°<br>alt: %{customdata:.0f} km<extra></extra>",
+                customdata=np.stack([dfg["alt_km"]], axis=1),
+                mode="markers",
+                marker=dict(size=6, opacity=0.9),
+                name="Satellites"
+            ))
+
+            # Lines: connect each pair (approx on surface great-circle)
+            # (This is illustrative; it connects ground sub-points.)
+            lines = []
+            for _, r in shown.iterrows():
+                a = dfg[dfg["norad_id"] == r["norad_id_a"]]
+                b = dfg[dfg["norad_id"] == r["norad_id_b"]]
+                if len(a) and len(b):
+                    lines.append(go.Scattergeo(
+                        lat=[float(a["lat"]), float(b["lat"])],
+                        lon=[float(a["lon"]), float(b["lon"])],
+                        mode="lines",
+                        line=dict(width=1),
+                        opacity=0.5,
+                        hoverinfo="skip",
+                        showlegend=False
+                    ))
+            for ln in lines: fig.add_trace(ln)
+
+            fig.update_layout(height=650, margin=dict(l=0, r=0, t=0, b=0))
+            st.plotly_chart(fig, use_container_width=True)
+            st.caption("Note: Points are current sub-points (ground tracks). Lines connect sub-points for the shown pairs. For full orbit arcs we can add propagated tracks next.")
+    except Exception as e:
+        st.warning(f"Globe view unavailable: {e}")
+
 
 # -------- About --------
 with tab_about:
