@@ -260,4 +260,4 @@ with tab_about:
 # Rerun after recompute
 if st.session_state.get("_force_rerun"):
     st.session_state["_force_rerun"] = False
-    st.experimental_rerun()
+    st.rerun()

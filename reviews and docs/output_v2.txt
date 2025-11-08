@@ -1,0 +1,88 @@
+/Users/rpandey/DevHub/kendragraph/run_space_baseline.py:191: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  started = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
+🚀 Kendragraph v1 → Insight V2 | start: 2025-11-08 20:44:54 UTC
+• Insight service: http://localhost:8000/conjunctions/insight
+• Raw out: logs/raw.jsonl
+• Enriched out: logs/enriched.jsonl
+
+/Users/rpandey/DevHub/kendragraph/run_space_baseline.py:211: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  "ts_utc": datetime.utcnow().isoformat().replace("+00:00", "Z")
+=== INSIGHT LAYER ===
+{
+  "insight_summary": "Conjunction between TERRASAR-X and TANDEM-X at ~0.29 km (TCA 2025-11-08T06:38:48Z); model risk=0.99.",
+  "confidence_level": 0.95,
+  "root_cause": "shared inclination and tight altitude band and similar RAAN",
+  "historical_similarity": null,
+  "recommended_action": "Plan avoidance maneuver (lateral or radial) within next orbit.",
+  "time_to_action": "23 hours",
+  "impact_zone": "Polar segment (approx.), descending node"
+}
+
+=== WHY-NOT LAYER ===
+{
+  "verdict": "High risk",
+  "primary_reasons": [
+    {
+      "code": "GEOM_SEP_GROWING",
+      "summary": "Separation increasing after next orbit"
+    },
+    {
+      "code": "COV_SMALL",
+      "summary": "Covariance ellipsoids do not overlap (1\u20133\u03c3)"
+    },
+    {
+      "code": "REL_VEL_PROFILE_SAFE",
+      "summary": "Relative velocity profile is tangent/diverging"
+    }
+  ],
+  "supporting_facts": {
+    "min_dist_km": 0.29,
+    "rel_velocity_kms": 1.2,
+    "sigma_overlap": false,
+    "d_sep_next_orbit_km": 0.522,
+    "tle_age_hours": 6.0,
+    "ephemeris_quality": "good"
+  },
+  "counterfactual": [
+    {
+      "description": "High risk if covariance grows 3\u00d7 (e.g., TLE age > 72h or solar activity spike)",
+      "minimal_change": {
+        "covariance_scale": 3.0
+      },
+      "plausibility": "medium",
+      "path": null,
+      "monitor": "Refresh ephemeris before next two orbits"
+    },
+    {
+      "description": "High risk if small along-track \u0394v aligns phasing",
+      "minimal_change": {
+        "dv_ms": 0.1
+      },
+      "plausibility": "low",
+      "path": "opponent executes uncoordinated 0.1 m/s along-track burn",
+      "monitor": null
+    }
+  ],
+  "assumptions": [
+    "No unplanned maneuvers before TCA",
+    "Ephemeris within historical error bounds for both operators"
+  ],
+  "data_quality": {
+    "ephemeris_age_hours": 6.0,
+    "coverage_gaps": false,
+    "downlink_blackouts": 0.0,
+    "confidence": 0.95
+  },
+  "watch_items": [],
+  "audit_tags": [
+    "exoneration",
+    "explainability",
+    "data_quality_ok"
+  ]
+}
+------------------------------------------------------------
+/Users/rpandey/DevHub/kendragraph/run_space_baseline.py:251: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  finished = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
+
+✅ Done. processed=1, enriched_ok=1, start=2025-11-08 20:44:54 UTC, end=2025-11-08 20:44:54 UTC
+(.venv) WHM5008346:kendragraph rpandey$ 
