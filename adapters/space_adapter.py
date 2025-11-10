@@ -4,6 +4,7 @@ Purpose: Turn the raw TLE text file into a simple table (DataFrame).
 Why: Everything downstream expects 'rows' of satellites with IDs and TLE lines.
 """
 
+import json
 from pathlib import Path
 import pandas as pd
 
