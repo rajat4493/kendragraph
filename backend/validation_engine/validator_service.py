@@ -5,6 +5,7 @@ from .cdm_fetcher import SpaceTrackClient
 from .normalizer import parse_kvn_blocks, normalize_cdm
 from .pair_matcher import match
 from .metrics_calculator import compute_metrics
+from datetime import datetime, timezone
 
 LOG_DIR = Path("logs/validation")
 

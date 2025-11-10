@@ -12,6 +12,7 @@ from engine.data_refresh import fetch_active_tles
 from adapters.space_adapter import load_tle_txt
 from engine.fast_pairs import min_distance_over_window
 from engine.score_baseline import apply_baseline
+from adapters.insight_client import InsightClient
 
 st.set_page_config(page_title="KendraGraph", layout="wide")
 
