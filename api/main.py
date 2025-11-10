@@ -6,6 +6,7 @@ Purpose: expose risks + validation under one FastAPI app.
 from fastapi import FastAPI, Query
 import pandas as pd
 import pathlib, hashlib
+from api.routers import validation
 
 app = FastAPI(title="KendraGraph API", version="v1")
 
@@ -66,3 +67,5 @@ def top_risks(n: int = Query(50, ge=1, le=1000)):
         df["tca_utc"] = pd.to_datetime(df["tca_utc"], utc=True).dt.strftime("%Y-%m-%dT%H:%M:%S%z")
 
     return df.head(n).to_dict(orient="records")
+
+app.include_router(validation.router)

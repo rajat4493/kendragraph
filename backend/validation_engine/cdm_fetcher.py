@@ -1,9 +1,11 @@
-import os, datetime as dt
-from typing import List, Dict, Any
+import os
+import datetime as dt
 import requests
 
-SPACE_TRACK = "https://www.space-track.org"
-# Use the 'spacetrack' Python client if you prefer; both are fine.
+BASE = "https://www.space-track.org"
+
+def has_spacetrack_creds() -> bool:
+    return bool(os.getenv("ST_USERNAME")) and bool(os.getenv("ST_PASSWORD"))
 
 class SpaceTrackClient:
     def __init__(self, user: str, pwd: str):
@@ -12,18 +14,37 @@ class SpaceTrackClient:
         self._login()
 
     def _login(self):
-        r = self.s.post(f"{SPACE_TRACK}/ajaxauth/login", data={"identity": self.user, "password": self.pwd})
+        r = self.s.post(
+            f"{BASE}/ajaxauth/login",
+            data={"identity": self.user, "password": self.pwd},
+            timeout=30,
+        )
         r.raise_for_status()
 
-    def fetch_cdm_public(self, start: dt.datetime, end: dt.datetime, limit: int = 10000) -> str:
-        # KVN is compact; JSON is also available depending on controller.
-        # Example CDM public controller (subject to account privileges/rate limits).
-        # See Space-Track docs for query forms and rate limits.
-        qs = (
-          f"/expandedspacedata/query/class/cdm_public/"
-          f"epoch/{start:%Y-%m-%d}--{end:%Y-%m-%d}/"
-          f"format/kvn/emptyresult/show"
-        )
-        r = self.s.get(SPACE_TRACK + qs, timeout=60)
+    def fetch_cdm_public_json(
+        self,
+        start: dt.datetime,
+        end: dt.datetime,
+        limit: int | None = None,
+        orderby: str | None = "TCA asc",
+    ) -> list[dict]:
+        """
+        Fetch public CDMs from Space-Track in JSON.
+        Uses /basicspacedata/query/class/cdm_public with TCA window.
+        """
+        # Build path segments. Space-Track uses slash-separated params.
+        path = [
+            "basicspacedata", "query",
+            "class", "cdm_public",
+            "TCA", f"{start:%Y-%m-%d}--{end:%Y-%m-%d}",
+            "format", "json",
+        ]
+        if orderby:
+            path += ["orderby", orderby.replace(" ", "%20")]
+        if limit:
+            path += ["limit", str(limit)]
+        url = f"{BASE}/" + "/".join(path)
+
+        r = self.s.get(url, timeout=60)
         r.raise_for_status()
-        return r.text  # raw KVN
+        return r.json()

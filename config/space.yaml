@@ -1,5 +1,5 @@
 validation:
   tca_window_s: 300
   dist_window_km: 1.0
-propagation:
-  horizon_hours: 48
+batch:
+  days: 1        # rolling window used by default CLI

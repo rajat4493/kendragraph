@@ -1,3 +1,4 @@
+# api/routers/validation.py
 from fastapi import APIRouter
 from pydantic import BaseModel
 import datetime as dt
@@ -10,13 +11,10 @@ class RunReq(BaseModel):
     end: dt.datetime
     tca_window_s: int = 300
     dist_window_km: float = 1.0
-    predictions: list
 
 @router.post("/run")
 def run_validation_job(body: RunReq):
-    result = run_validation(body.start, body.end, body.predictions,
-                            body.tca_window_s, body.dist_window_km)
-    return result
+    return run_validation(body.start, body.end, body.tca_window_s, body.dist_window_km)
 
 @router.get("/metrics")
 def get_latest_metrics():
